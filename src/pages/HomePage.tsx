@@ -119,7 +119,7 @@ function HomePage() {
           <div className="w-full flex flex-col lg:flex-row justify-around space-x-2">
             <form
               onSubmit={handlePlayGame}
-              className="flex flex-col items-center mt-8 p-2 space-y-4 rounded dark:bg-gray-800 bg-gray-300 overflow-auto min-h-[-webkit-fill-available]"
+              className="flex flex-col items-center mt-8 p-2 space-y-4 rounded dark:bg-gray-800 bg-gray-300 lg:overflow-auto"
             >
               <h1 className="text-lg font-bold my-2">Rock Paper Scissors</h1>
               <div className="relative flex items-center justify-between">
