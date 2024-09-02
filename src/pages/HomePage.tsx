@@ -82,10 +82,10 @@ function HomePage() {
 
     if (!activeAccount) return alert("No Active Account!");
 
-    setPlaying(true);
-    setGames(null);
 
     try {
+      setPlaying(true);
+
       await playGame(activeAccount, move, amount).catch((e) => {
         handleError(e, true)
         if(e.origin === "start_game") throw "Start_Game Error";
@@ -93,9 +93,11 @@ function HomePage() {
 
       await fetchData().catch(handleError);
 
+      setGames(null);
       const games = await getGames(activeAccount).catch(handleError);
+      setGames(prev => games || prev);
+
       if (games) {
-        setGames(games);
         const recentGame = games[0];
 
         setAlert(
