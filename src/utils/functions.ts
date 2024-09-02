@@ -77,7 +77,10 @@ async function fundAccountWithRetry(
       accountAddress: activeAccount.accountAddress,
       amount: 100_000_000,
     })
-    .catch((e) => console.log(e));
+    .catch((e) => {
+      if (e.message === "waitForLastSuccessIndexerVersionSync timeout") console.log(e)
+      else throw e
+    });
 
   if (retryCount < maxRetries) {
     await fetchBalanceCallback();
