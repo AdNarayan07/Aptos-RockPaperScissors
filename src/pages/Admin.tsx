@@ -17,93 +17,114 @@ import {
   deposit,
 } from "../utils/functions";
 import { EventData } from "../utils/types";
+import { KeylessAccount } from "@aptos-labs/ts-sdk";
 
 // import { ADMINS } from "../core/constants";
 
 function AdminPage() {
   const navigate = useNavigate();
-  const { activeAccount } = useKeylessAccounts();
-  const [balance, setBalance] = useState<number | null>(null);
-  const [bankBalance, setBankBalance] = useState<number | undefined>(undefined);
-  const [events, setEvents] = useState<EventData[] | null>(null);
-  const [currentPage, setCurrentPage] = useState<number>(0);
-  const [noNextPage, setNoNextPage] = useState<boolean>(true);
-  const [alertMessage, setAlertMessage] = useState<string | null>(null);
-  const [alertType, setAlertType] = useState<AlertType>("info");
-  const [transacting, setTransacting] = useState<boolean>(false);
+const { activeAccount } = useKeylessAccounts();
+const [balance, setBalance] = useState<number | null>(null);
+const [bankBalance, setBankBalance] = useState<number | undefined>(undefined);
+const [events, setEvents] = useState<EventData[] | null>(null);
+const [currentPage, setCurrentPage] = useState<number>(0);
+const [noNextPage, setNoNextPage] = useState<boolean>(true);
+const [alertMessage, setAlertMessage] = useState<string | null>(null);
+const [alertType, setAlertType] = useState<AlertType>("info");
+const [transacting, setTransacting] = useState<boolean>(false);
 
-  useEffect(() => {
-    if (!activeAccount) {
-      navigate("/");
-    } else {
-      /*
-      if (!ADMINS.includes(activeAccount.accountAddress.toStringLong())) {
-        return navigate("/home");
-      }
-      */
-      fetchBalance(activeAccount, setBalance);
-    }
-  }, [activeAccount, navigate]);
+useEffect(() => {
+  if (!activeAccount) {
+    navigate("/");
+  } else {
+    fetchBalanceAndHandleError(activeAccount, setBalance);
+  }
+}, [activeAccount, navigate]);
 
-  useEffect(() => {
+useEffect(() => {
+  fetchBankBalance(setBankBalance);
+}, []);
+
+useEffect(() => {
+  fetchEventsAndHandleError(currentPage);
+}, [currentPage]);
+
+// Utility function to set both alert type and message
+const setAlert = (type: AlertType, message: string) => {
+  setAlertType(type);
+  setAlertMessage(message);
+};
+
+// Function to handle balance fetching with error handling
+const fetchBalanceAndHandleError = async (
+  account: KeylessAccount,
+  setBalance: (value: number | null) => void
+) => {
+  try {
+    await fetchBalance(account, setBalance);
+  } catch (error: any) {
+    setAlert(error.type || "error", error.message || String(error));
+    console.error(error);
+  }
+};
+
+// Function to handle events fetching with error handling
+const fetchEventsAndHandleError = async (pageNumber: number) => {
+  try {
+    await getEvents(setEvents, setNoNextPage, pageNumber);
+  } catch (error: any) {
+    setAlert("error", String(error));
+    console.error(error);
+  }
+};
+
+// Generic transaction handler
+const handleTransaction = async (
+  action: () => Promise<void>,
+  successMessage: string
+) => {
+  setTransacting(true);
+  try {
+    await action();
+    setAlert("success", successMessage);
+    if(activeAccount) await fetchBalanceAndHandleError(activeAccount, setBalance);
     fetchBankBalance(setBankBalance);
-  }, []);
+    fetchEventsAndHandleError(0);
+  } catch (error: any) {
+    setAlert("error", String(error));
+    console.error(error);
+  } finally {
+    setTransacting(false);
+  }
+};
 
-  useEffect(() => {
-    console.log(currentPage);
-    getEvents(setEvents, setNoNextPage, currentPage);
-  }, [currentPage]);
+// Generic form handler for deposit and withdraw actions
+const handleFormEvent = (
+  event: React.FormEvent<Element>,
+  transactionFn: (_a: KeylessAccount, _b: number) => Promise<void>,
+  successMessage: string
+) => {
+  event.preventDefault();
+  const formdata = new FormData(event.currentTarget as HTMLFormElement);
+  const amount = formdata.get("amount") as string | null;
 
-  const depositEventHandler: FormEventHandler = (e) => {
-    e.preventDefault();
-    const formdata = new FormData(e.currentTarget as HTMLFormElement);
-    const amount = formdata.get("amount") as string | null;
+  if (activeAccount && amount) {
+    handleTransaction(
+      () => transactionFn(activeAccount, parseFloat(amount) * 100000000),
+      successMessage
+    );
+  } else {
+    setAlert("error", "No active account or Invalid Amount");
+  }
+};
 
-    if (activeAccount && amount) {
-      setTransacting(true);
-      deposit(activeAccount, parseFloat(amount) * 100000000)
-        .then(() => {
-          setAlertType("success");
-          setAlertMessage("Coins Deposited to the Bank!");
-          fetchBalance(activeAccount, setBalance);
-          fetchBankBalance(setBankBalance);
-          getEvents(setEvents, setNoNextPage, 0);
-        })
-        .catch((error) => {
-          setAlertType("error");
-          setAlertMessage(String(error));
-          console.log(error);
-        })
-        .finally(() => setTransacting(false));
-    } else {
-      setAlertType("error");
-      setAlertMessage(String("No active account or Invalid Amount"));
-    }
-  };
+const depositEventHandler: FormEventHandler = (e) => {
+  handleFormEvent(e, deposit, "Coins Deposited to the Bank!");
+};
 
-  const withdrawEventHandler: FormEventHandler = (e) => {
-    e.preventDefault();
-    const formdata = new FormData(e.currentTarget as HTMLFormElement);
-    const amount = formdata.get("amount") as string | null;
-
-    if (activeAccount) {
-      setTransacting(true);
-      withdraw(activeAccount, amount ? parseFloat(amount) * 100000000 : null)
-        .then(() => {
-          setAlertType("success");
-          setAlertMessage("Withdrawal Successful");
-          fetchBalance(activeAccount, setBalance);
-          fetchBankBalance(setBankBalance);
-          getEvents(setEvents, setNoNextPage, 0);
-        })
-        .catch((error) => {
-          setAlertType("error");
-          setAlertMessage(String(error));
-          console.log(error);
-        })
-        .finally(() => setTransacting(false));
-    }
-  };
+const withdrawEventHandler: FormEventHandler = (e) => {
+  handleFormEvent(e, withdraw, "Withdrawal Successful");
+};
 
   return (
     <div className="flex flex-col overflow-scroll px-4 bg-white dark:bg-gray-900 bg-gray-400 text-black dark:text-white transition-colors h-screen">

@@ -38,39 +38,61 @@ function HomePage() {
   const [alertMessage, setAlertMessage] = useState<string | null>(null);
   const [alertType, setAlertType] = useState<AlertType>("info");
 
-  useEffect(() => {
-    if (!activeAccount) {
-      navigate("/");
-    } else {
-      fetchBalance(activeAccount, setBalance);
-      getGames(activeAccount)
-        .then((games) => setGames(games))
-        .catch((error) => {
+  const setAlert = (type: AlertType, message: string) => {
+    setAlertType(type);
+    setAlertMessage(message);
+  };
+
+  // Utility function to handle errors and set alerts
+  const handleError = (error: any, alert: boolean = false) => {
+    if (alert) setAlert(error.type || "error", error.message || String(error));
+    console.error(error);
+  };
+
+  // Handle fetching balance and games, with common error handling
+  const fetchData = async () => {
+    if (!activeAccount) return navigate("/");
+    try {
+      const [_a, _b, games] = await Promise.all([
+        fetchBalance(activeAccount, setBalance).catch((error) =>
+          handleError(error, true)
+        ),
+        fetchBankBalance(setBankBalance).catch((error) => handleError(error, true)),
+        getGames(activeAccount).catch((error) => {
           setGames([]);
-          console.error("Failed to get games:", error);
-        });
+          handleError(error, true);
+        }),
+      ]);
+
+      setGames(games || []);
+    } catch (error) {
+      handleError(error);
     }
-  }, [activeAccount, navigate]);
+  };
 
   useEffect(() => {
-    fetchBankBalance(setBankBalance);
+    fetchData();
+    fetchBankBalance(setBankBalance).catch((error) => handleError(error, true));
   }, []);
 
   const handlePlayGame: FormEventHandler = async (e) => {
-    if (!activeAccount) return alert("No Active Account!");
     e.preventDefault();
+
+    if (!activeAccount) return alert("No Active Account!");
+
+    setPlaying(true);
+    setGames(null);
+
     try {
-      setPlaying(true);
       await playGame(activeAccount, move, amount);
-      fetchBalance(activeAccount, setBalance);
-      fetchBankBalance(setBankBalance);
-      setGames(null);
-      let games = await getGames(activeAccount);
-      setGames(games);
-      let recentGame = games[0];
-      setAlertType("success");
-      setAlertMessage(`
-        ${(() => {
+      await fetchData();
+
+      const games = await getGames(activeAccount);
+      const recentGame = games[0];
+
+      setAlert(
+        "success",
+        (() => {
           switch (recentGame?.result) {
             case 1:
               return "Game Drawn";
@@ -81,16 +103,16 @@ function HomePage() {
             default:
               return "Result Undeclared";
           }
-        })()}
-        `);
+        })()
+      );
     } catch (error) {
-      setAlertType("error");
-      setAlertMessage(String(error));
-      console.log(error);
+      setAlert("error", String(error));
+      console.error(error);
     } finally {
       setPlaying(false);
     }
   };
+
   return (
     <div className="flex flex-col overflow-hidden px-4 bg-white dark:bg-gray-900 bg-gray-400 text-black dark:text-white transition-colors h-screen">
       <Header page="home" />
@@ -209,7 +231,18 @@ function HomePage() {
                 <span className="underline">Steps:</span>
                 <ol className="ml-6 mt-2 space-y-2">
                   <li className="flex items-start">
-                    <span>Note: You need to <a href="https://www.aptosfaucet.com/" className="text-cyan-500 hover:underline" target="_blank">fund your wallet with APT token</a> on first login</span>
+                    <span>
+                      Note: Please{" "}
+                      <a
+                        href="https://www.aptosfaucet.com/"
+                        className="text-cyan-500 hover:underline"
+                        target="_blank"
+                      >
+                        fund your wallet with APT token
+                      </a>{" "}
+                      if you get "Account Not Found" or "Insufficient Balance"
+                      or "Faucet Error".
+                    </span>
                   </li>
                   <li className="flex items-start">
                     <span>1. Select the bet amount (optional)</span>
@@ -417,14 +450,14 @@ function HomePage() {
                 )}
               </div>
             </div>
-            {/*ADMINS.includes(activeAccount.accountAddress.toStringLong()) &&*/ (
-              <button
+            {
+              /*ADMINS.includes(activeAccount.accountAddress.toStringLong()) &&*/ <button
                 className="fixed bottom-4 shadow-lg font-medium right-4 px-4 py-2 rounded dark:bg-gray-950 bg-gray-200 border w-[20ch] transition-all active:scale-[0.8]"
                 onClick={() => navigate("/admin")}
               >
                 Go To Admin Page
               </button>
-            )}
+            }
           </div>
         ) : null}
       </div>
