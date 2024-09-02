@@ -71,14 +71,13 @@ async function fundAccountWithRetry(
   fetchBalanceCallback: () => Promise<void>
 ) {
   console.log("Trying to fund the account. Reason: " + reason);
+
   await aptos
     .fundAccount({
       accountAddress: activeAccount.accountAddress,
       amount: 100_000_000,
     })
-    .catch((error) => {
-      throw `Trying to fund ${reason} failed: ${error}`;
-    });
+    .catch((e) => console.log(e));
 
   if (retryCount < maxRetries) {
     await fetchBalanceCallback();

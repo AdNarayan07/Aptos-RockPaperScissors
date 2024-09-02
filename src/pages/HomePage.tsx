@@ -71,9 +71,9 @@ function HomePage() {
   };
 
   useEffect(() => {
-    fetchData();
     fetchBankBalance(setBankBalance).catch((error) => handleError(error, true));
-  }, []);
+    fetchData();
+  }, [activeAccount, navigate]);
 
   const handlePlayGame: FormEventHandler = async (e) => {
     e.preventDefault();
