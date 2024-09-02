@@ -86,9 +86,11 @@ function HomePage() {
     setGames(null);
 
     try {
-      await playGame(activeAccount, move, amount).catch((e) =>
+      await playGame(activeAccount, move, amount).catch((e) => {
         handleError(e, true)
-      );
+        if(e.origin === "start_game") throw "Start_Game Error";
+      });
+
       await fetchData().catch(handleError);
 
       const games = await getGames(activeAccount).catch(handleError);
@@ -111,6 +113,8 @@ function HomePage() {
           })()
         );
       }
+    } catch (e){
+      console.log(e)
     } finally {
       setPlaying(false);
     }
@@ -274,6 +278,7 @@ function HomePage() {
                 bankBalance={bankBalance}
                 setBankBalance={setBankBalance}
                 activeAccount={activeAccount}
+                handleError={handleError}
               />
               <div className="flex-1 overflow-y-auto flex flex-col p-2 mt-4 rounded dark:bg-gray-800 bg-gray-300 lg:w-[26rem] mb-4 lg:mb-0">
                 <h2 className="text-lg font-bold mb-2 text-center">

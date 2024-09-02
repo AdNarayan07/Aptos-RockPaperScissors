@@ -1,6 +1,5 @@
 import { KeylessAccount } from "@aptos-labs/ts-sdk";
-import { fetchBankBalance } from "../utils/functions";
-import { fetchBalance } from "../utils/functions";
+import { fetchBalance, fetchBankBalance } from "../utils/functions";
 import AptosLogo from "./AptosLogo";
 import Lottie from "lottie-react";
 import loadingAnimation from "./loading_lottie.json"
@@ -12,6 +11,7 @@ interface BalancesProps {
   bankBalance: number | undefined;
   setBankBalance: (value: number | undefined) => void;
   activeAccount: KeylessAccount;
+  handleError: (error: any, alert: boolean) => void
 }
 
 const Balances: React.FC<BalancesProps> = ({
@@ -20,6 +20,7 @@ const Balances: React.FC<BalancesProps> = ({
   bankBalance,
   setBankBalance,
   activeAccount,
+  handleError
 }) => {
 
   const Loading = 
@@ -48,7 +49,9 @@ const Balances: React.FC<BalancesProps> = ({
             const targetElement = e.currentTarget;
             const currentRotation = parseInt(targetElement.style.rotate) || 0;
             e.currentTarget.style.rotate = `${currentRotation + 360}deg`;
-            fetchBalance(activeAccount, setBalance);
+            fetchBalance(activeAccount, setBalance).catch((error) =>
+              handleError(error, true)
+            );
           }}
           className="text-blue-600 ml-2 dark:text-blue-400 hover:underline font-semibold text-2xl w-9 h-9 text-center rounded-full dark:hover:bg-gray-950 hover:outline outline-1 transition-all duration-300"
           style={{ textDecoration: "none" }}
@@ -70,7 +73,9 @@ const Balances: React.FC<BalancesProps> = ({
             const targetElement = e.currentTarget;
             const currentRotation = parseInt(targetElement.style.rotate) || 0;
             e.currentTarget.style.rotate = `${currentRotation + 360}deg`;
-            fetchBankBalance(setBankBalance);
+            fetchBankBalance(setBankBalance).catch((error) =>
+              handleError(error, true)
+            )
           }}
           className="text-blue-600 ml-2 dark:text-blue-400 hover:underline font-semibold text-2xl w-9 h-9 text-center rounded-full dark:hover:bg-gray-950 hover:outline outline-1 transition-all duration-300"
           style={{ textDecoration: "none" }}

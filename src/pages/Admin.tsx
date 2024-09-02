@@ -55,6 +55,12 @@ const setAlert = (type: AlertType, message: string) => {
   setAlertMessage(message);
 };
 
+  // Utility function to handle errors and set alerts
+  const handleError = (error: any, alert: boolean = false) => {
+    if (alert) setAlert(error.type || "error", error.message || String(error));
+    console.error(error);
+  };
+
 // Function to handle balance fetching with error handling
 const fetchBalanceAndHandleError = async (
   account: KeylessAccount,
@@ -63,8 +69,7 @@ const fetchBalanceAndHandleError = async (
   try {
     await fetchBalance(account, setBalance);
   } catch (error: any) {
-    setAlert(error.type || "error", error.message || String(error));
-    console.error(error);
+    handleError(error, true)
   }
 };
 
@@ -73,8 +78,7 @@ const fetchEventsAndHandleError = async (pageNumber: number) => {
   try {
     await getEvents(setEvents, setNoNextPage, pageNumber);
   } catch (error: any) {
-    setAlert("error", String(error));
-    console.error(error);
+    handleError(error, true)
   }
 };
 
@@ -91,8 +95,7 @@ const handleTransaction = async (
     fetchBankBalance(setBankBalance);
     fetchEventsAndHandleError(0);
   } catch (error: any) {
-    setAlert("error", String(error));
-    console.error(error);
+    handleError(error, true)
   } finally {
     setTransacting(false);
   }
@@ -209,6 +212,7 @@ const withdrawEventHandler: FormEventHandler = (e) => {
               bankBalance={bankBalance}
               setBankBalance={setBankBalance}
               activeAccount={activeAccount}
+              handleError={handleError}
             />
           </div>
           <div className="flex-1 w-full max-w-5xl overflow-y-auto flex flex-col p-2 mt-4 rounded dark:bg-gray-800 bg-gray-300">

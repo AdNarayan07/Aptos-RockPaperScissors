@@ -78,6 +78,7 @@ async function fundAccountWithRetry(
       amount: 100_000_000,
     })
     .catch((e) => {
+      console.log("mewww")
       if (e.message === "waitForLastSuccessIndexerVersionSync timeout") console.log(e)
       else throw e
     });
@@ -116,7 +117,7 @@ export async function fetchBalance(
     const balanceValue = (accountResource?.data as any)?.coin?.value;
     let balance = balanceValue ? parseInt(balanceValue) : 0;
 
-    if (balance < 100_000) {
+    if (balance < 1_000_000) {
       await fundAccountWithRetry(
         activeAccount,
         retryCount,
@@ -201,7 +202,7 @@ export async function playGame(
         function: `${MODULE_OWNER}::RockPaperScissors::start_game`,
         functionArguments: [move, amountInOctas, Date.now()],
       }
-    );
+    ).catch((error) => { throw {origin: "start_game", message: String(error)}});
 
     checkTransactionStatus(committedTransactionResponse);
 
@@ -211,7 +212,7 @@ export async function playGame(
         function: `${MODULE_OWNER}::RockPaperScissors::finalize_results`,
         functionArguments: [],
       }
-    );
+    ).catch((error) => { throw {origin: "finalize_results", message: String(error)}});
 
     checkTransactionStatus(committedTransactionResponse2);
   } catch (error) {
