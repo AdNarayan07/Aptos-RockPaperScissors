@@ -57,7 +57,9 @@ function HomePage() {
         fetchBalance(activeAccount, setBalance).catch((error) =>
           handleError(error, true)
         ),
-        fetchBankBalance(setBankBalance).catch((error) => handleError(error, true)),
+        fetchBankBalance(setBankBalance).catch((error) =>
+          handleError(error, true)
+        ),
         getGames(activeAccount).catch((error) => {
           setGames([]);
           handleError(error, true);
@@ -84,30 +86,31 @@ function HomePage() {
     setGames(null);
 
     try {
-      await playGame(activeAccount, move, amount);
-      await fetchData();
-
-      const games = await getGames(activeAccount);
-      const recentGame = games[0];
-
-      setAlert(
-        "success",
-        (() => {
-          switch (recentGame?.result) {
-            case 1:
-              return "Game Drawn";
-            case 2:
-              return "You Won";
-            case 3:
-              return "You Lost";
-            default:
-              return "Result Undeclared";
-          }
-        })()
+      await playGame(activeAccount, move, amount).catch((e) =>
+        handleError(e, true)
       );
-    } catch (error) {
-      setAlert("error", String(error));
-      console.error(error);
+      await fetchData().catch(handleError);
+
+      const games = await getGames(activeAccount).catch(handleError);
+      if (games) {
+        setGames(games);
+        const recentGame = games[0];
+
+        setAlert(
+          ...((): [AlertType, string] => {
+            switch (recentGame?.result) {
+              case 1:
+                return ["info", "Game Drawn"];
+              case 2:
+                return ["success", "You Won"];
+              case 3:
+                return ["error", "You Lost"];
+              default:
+                return ["warning", "Result Undeclared"];
+            }
+          })()
+        );
+      }
     } finally {
       setPlaying(false);
     }
@@ -228,11 +231,28 @@ function HomePage() {
                 Shoot!
               </button>
               <div className="w-full flex-1 text-gray-800 dark:text-gray-200 mb-4 p-2 rounded dark:bg-gray-900 bg-gray-200">
-                <span className="underline">Steps:</span>
+                <span className="underline">Please Note:</span>
                 <ol className="ml-6 mt-2 space-y-2">
                   <li className="flex items-start">
                     <span>
-                      Note: Please{" "}
+                      <a
+                        href="https://www.aptosfaucet.com/"
+                        className="text-cyan-500 hover:underline"
+                        target="_blank"
+                      >
+                        ⚠️ Fund your wallet with APT token
+                      </a>{" "}
+                      if you get "Account Not Found" or "Insufficient Balance"
+                      or "Faucet Error".
+                    </span>
+                  </li>
+                  <li className="flex items-start">
+                    <span>
+                      ⚠️ If you bet the amount which is very close to your
+                      current wallet balance, the result declaration might fail
+                      and you will get a
+                      "INSUFFICIENT_BALANCE_FOR_TRANSACTION_FEE" error with
+                      "Result Undeclared" warning, in such case{" "}
                       <a
                         href="https://www.aptosfaucet.com/"
                         className="text-cyan-500 hover:underline"
@@ -240,32 +260,8 @@ function HomePage() {
                       >
                         fund your wallet with APT token
                       </a>{" "}
-                      if you get "Account Not Found" or "Insufficient Balance"
-                      or "Faucet Error".
-                    </span>
-                  </li>
-                  <li className="flex items-start">
-                    <span>1. Select the bet amount (optional)</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span>2. Choose your move</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span>3. Shoot!</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span>
-                      4. The bet amount (if non-zero) is transferred from your
-                      wallet to the game bank
-                    </span>
-                  </li>
-                  <li className="flex items-start">
-                    <span>5. The computer plays its move, randomly</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span>
-                      6. The result is calculated and reward is sent from the
-                      game bank to your wallet accordingly
+                      and play a new game. This will declare the previously
+                      undeclared game results.
                     </span>
                   </li>
                 </ol>
