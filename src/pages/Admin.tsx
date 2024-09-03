@@ -111,7 +111,7 @@ function AdminPage() {
   // Generic form handler for deposit and withdraw actions
   const handleFormEvent = (
     event: React.FormEvent<Element>,
-    transactionFn: (_a: KeylessAccount, _b: number) => Promise<void>,
+    transactionFn: (_a: KeylessAccount, _b: number | null) => Promise<void>,
     successMessage: string
   ) => {
     event.preventDefault(); // prevent default action
@@ -119,16 +119,12 @@ function AdminPage() {
     // Get the amount
     const formdata = new FormData(event.currentTarget as HTMLFormElement);
     const amount = formdata.get("amount") as string | null;
-
-    // Handle the transaction
-    if (activeAccount && amount) {
-      handleTransaction(
-        () => transactionFn(activeAccount, parseFloat(amount) * 100000000),
-        successMessage
-      );
-    } else {
-      setAlert("error", "No active account or Invalid Amount");
-    }
+    const amount_in_octas = amount? parseFloat(amount) * 100000000 : null
+    
+   activeAccount && handleTransaction(
+      () => transactionFn(activeAccount, amount_in_octas),
+      successMessage
+    );
   };
 
   // Event Handlers for Withdraw and Deposit forms

@@ -283,8 +283,9 @@ export async function withdraw(
 }
 
 // Function to deposit the coins to bank
-export async function deposit(activeAccount: KeylessAccount, amount: number) {
+export async function deposit(activeAccount: KeylessAccount, amount: number | null) {
   try {
+    if (!amount) throw `402: Invalid Input`
     // Sign the withdraw_to_wallet transaction
     const committedTransactionResponse = await transaction_signer(
       activeAccount,
