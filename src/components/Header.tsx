@@ -14,8 +14,9 @@ function Header(props: {page: "home" | "admin"}) {
 
   useEffect(() => {
     if (activeAccount) {
-        let { name, email, picture } = jwtDecode(activeAccount.jwt) as Profile;
-        setProfile({ name, email, picture });
+      // Load player profile from jwt
+      let { name, email, picture } = jwtDecode(activeAccount.jwt) as Profile;
+      setProfile({ name, email, picture });
     }
   }, [activeAccount]);
   

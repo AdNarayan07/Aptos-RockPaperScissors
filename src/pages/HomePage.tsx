@@ -18,6 +18,7 @@ import Lottie from "lottie-react";
 import CustomAlert, { AlertType } from "../components/CustomAlert";
 import Header from "../components/Header";
 import Balances from "../components/Balances";
+import { KeylessAccount } from "@aptos-labs/ts-sdk";
 
 const moveMap: { [key: number]: string } = {
   1: "Rock",
@@ -38,6 +39,7 @@ function HomePage() {
   const [alertMessage, setAlertMessage] = useState<string | null>(null);
   const [alertType, setAlertType] = useState<AlertType>("info");
 
+  // Utility function to set alert
   const setAlert = (type: AlertType, message: string) => {
     setAlertType(type);
     setAlertMessage(message);
@@ -45,61 +47,65 @@ function HomePage() {
 
   // Utility function to handle errors and set alerts
   const handleError = (error: any, alert: boolean = false) => {
-    if (alert) setAlert(error.type || "error", error.message || String(error));
+    if (alert) setAlert(error.type || "error", error.message || String(error)); // Show alert if stated
     console.error(error);
   };
 
-  // Handle fetching balance and games, with common error handling
-  const fetchData = async () => {
-    if (!activeAccount) return navigate("/");
+  // Function to fetch and show wallet balance, bank balance
+  const fetchData = async (activeAccount: KeylessAccount) => {
     try {
-      const [_a, _b, games] = await Promise.all([
+      await Promise.all([
         fetchBalance(activeAccount, setBalance).catch((error) =>
           handleError(error, true)
         ),
         fetchBankBalance(setBankBalance).catch((error) =>
           handleError(error, true)
-        ),
-        getGames(activeAccount).catch((error) => {
-          setGames([]);
-          handleError(error, true);
-        }),
+        )
       ]);
-
-      setGames(games || []);
     } catch (error) {
       handleError(error);
     }
   };
 
+  // Fetch the data and game history
   useEffect(() => {
-    fetchBankBalance(setBankBalance).catch((error) => handleError(error, true));
-    fetchData();
+    if (!activeAccount) return navigate("/");
+    fetchData(activeAccount);
+
+    getGames(activeAccount)
+    .then(((games) => {
+      setGames(games) // Set the games
+    }))
+    .catch((error) => {
+      setGames([]); // Set empty array on error
+      handleError(error, true);
+    })
   }, [activeAccount, navigate]);
 
+  // Handle Play Game Form on Submit
   const handlePlayGame: FormEventHandler = async (e) => {
-    e.preventDefault();
-
+    e.preventDefault(); // Prevent default behaviour
     if (!activeAccount) return alert("No Active Account!");
-
 
     try {
       setPlaying(true);
 
       await playGame(activeAccount, move, amount).catch((e) => {
         handleError(e, true)
+        // Don't let the code execution propagate if there is an error in starting the game
         if(e.origin === "start_game") throw "Start_Game Error";
       });
 
-      await fetchData().catch(handleError);
+      await fetchData(activeAccount).catch(handleError); // Refresh the data after game
 
-      setGames(null);
+      // Get the updated games data
       const games = await getGames(activeAccount).catch(handleError);
-      setGames(prev => games || prev);
+      setGames(prev => games || prev); // Get the updated games data if not void
 
       if (games) {
-        const recentGame = games[0];
+        const recentGame = games[0]; // Get the most recent game (i.e. the game that was just played)
 
+        // Alert the result
         setAlert(
           ...((): [AlertType, string] => {
             switch (recentGame?.result) {
@@ -116,7 +122,7 @@ function HomePage() {
         );
       }
     } catch (e){
-      console.log(e)
+      console.log(e) // Log the start_game error
     } finally {
       setPlaying(false);
     }
@@ -369,12 +375,10 @@ function HomePage() {
                         }
                       })()}`}
                           >
-                            {/* Timestamp as the header */}
                             <h1 className="w-full rounded-tl-sm rounded-tr-sm px-2 top-0 left-0 bg-black/80 text-xs text-white">
                               {new Date(game?.timestamp * 1).toLocaleString()}
                             </h1>
 
-                            {/* Result text as a tilted background */}
                             <div
                               className="absolute inset-0 flex justify-center items-center text-6xl font-bold opacity-10"
                               style={{ transform: "rotate(-45deg)" }}
@@ -461,7 +465,12 @@ function HomePage() {
               </div>
             </div>
             {
-              /*ADMINS.includes(activeAccount.accountAddress.toStringLong()) &&*/ <button
+              /*
+                The following code is commentified so that anyone can test this function without having to add their address in ADMINS.
+              */
+              // Show the buttons only to ADMINS
+              // ADMINS.includes(activeAccount.accountAddress.toStringLong()) &&
+              <button
                 className="fixed bottom-4 shadow-lg font-medium right-4 px-4 py-2 rounded dark:bg-gray-950 bg-gray-200 border w-[20ch] transition-all active:scale-[0.8]"
                 onClick={() => navigate("/admin")}
               >

@@ -23,37 +23,41 @@ import { KeylessAccount } from "@aptos-labs/ts-sdk";
 
 function AdminPage() {
   const navigate = useNavigate();
-const { activeAccount } = useKeylessAccounts();
-const [balance, setBalance] = useState<number | null>(null);
-const [bankBalance, setBankBalance] = useState<number | undefined>(undefined);
-const [events, setEvents] = useState<EventData[] | null>(null);
-const [currentPage, setCurrentPage] = useState<number>(0);
-const [noNextPage, setNoNextPage] = useState<boolean>(true);
-const [alertMessage, setAlertMessage] = useState<string | null>(null);
-const [alertType, setAlertType] = useState<AlertType>("info");
-const [transacting, setTransacting] = useState<boolean>(false);
+  const { activeAccount } = useKeylessAccounts();
+  const [balance, setBalance] = useState<number | null>(null);
+  const [bankBalance, setBankBalance] = useState<number | undefined>(undefined);
+  const [events, setEvents] = useState<EventData[] | null>(null);
+  const [currentPage, setCurrentPage] = useState<number>(0);
+  const [noNextPage, setNoNextPage] = useState<boolean>(true);
+  const [alertMessage, setAlertMessage] = useState<string | null>(null);
+  const [alertType, setAlertType] = useState<AlertType>("info");
+  const [transacting, setTransacting] = useState<boolean>(false);
 
-useEffect(() => {
-  if (!activeAccount) {
-    navigate("/");
-  } else {
-    fetchBalanceAndHandleError(activeAccount, setBalance);
-  }
-}, [activeAccount, navigate]);
+  useEffect(() => {
+    if (!activeAccount) {
+      navigate("/");
+    } else {
+      /*
+        The following code is commentified so that anyone can test this function without having to add their address in ADMINS.
+      */
+      // if (!ADMINS.includes(activeAccount.accountAddress.toStringLong())) navigate("/home")
 
-useEffect(() => {
-  fetchBankBalance(setBankBalance);
-}, []);
+      // fetch wallet and bank balance
+      fetchBalanceAndHandleError(activeAccount, setBalance); 
+      fetchBankBalance(setBankBalance);
+    }
+  }, [activeAccount, navigate]);
 
-useEffect(() => {
-  fetchEventsAndHandleError(currentPage);
-}, [currentPage]);
+  // Fetch 10 events of current page
+  useEffect(() => {
+    fetchEventsAndHandleError(currentPage);
+  }, [currentPage]);
 
-// Utility function to set both alert type and message
-const setAlert = (type: AlertType, message: string) => {
-  setAlertType(type);
-  setAlertMessage(message);
-};
+  // Utility function to set both alert type and message
+  const setAlert = (type: AlertType, message: string) => {
+    setAlertType(type);
+    setAlertMessage(message);
+  };
 
   // Utility function to handle errors and set alerts
   const handleError = (error: any, alert: boolean = false) => {
@@ -61,73 +65,80 @@ const setAlert = (type: AlertType, message: string) => {
     console.error(error);
   };
 
-// Function to handle balance fetching with error handling
-const fetchBalanceAndHandleError = async (
-  account: KeylessAccount,
-  setBalance: (value: number | null) => void
-) => {
-  try {
-    await fetchBalance(account, setBalance);
-  } catch (error: any) {
-    handleError(error, true)
-  }
-};
+  // Function to handle balance fetching with error handling
+  const fetchBalanceAndHandleError = async (
+    account: KeylessAccount,
+    setBalance: (value: number | null) => void
+  ) => {
+    try {
+      await fetchBalance(account, setBalance);
+    } catch (error: any) {
+      handleError(error, true);
+    }
+  };
 
-// Function to handle events fetching with error handling
-const fetchEventsAndHandleError = async (pageNumber: number) => {
-  try {
-    await getEvents(setEvents, setNoNextPage, pageNumber);
-  } catch (error: any) {
-    handleError(error, true)
-  }
-};
+  // Function to handle events fetching with error handling
+  const fetchEventsAndHandleError = async (pageNumber: number) => {
+    try {
+      await getEvents(setEvents, setNoNextPage, pageNumber);
+    } catch (error: any) {
+      handleError(error, true);
+    }
+  };
 
-// Generic transaction handler
-const handleTransaction = async (
-  action: () => Promise<void>,
-  successMessage: string
-) => {
-  setTransacting(true);
-  try {
-    await action();
-    setAlert("success", successMessage);
-    if(activeAccount) await fetchBalanceAndHandleError(activeAccount, setBalance);
-    fetchBankBalance(setBankBalance);
-    fetchEventsAndHandleError(0);
-  } catch (error: any) {
-    handleError(error, true)
-  } finally {
-    setTransacting(false);
-  }
-};
+  // Generic transaction handler (Withdraw or Deposit)
+  const handleTransaction = async (
+    action: () => Promise<void>,
+    successMessage: string
+  ) => {
+    setTransacting(true);
+    try {
+      await action(); // call transaction action 
 
-// Generic form handler for deposit and withdraw actions
-const handleFormEvent = (
-  event: React.FormEvent<Element>,
-  transactionFn: (_a: KeylessAccount, _b: number) => Promise<void>,
-  successMessage: string
-) => {
-  event.preventDefault();
-  const formdata = new FormData(event.currentTarget as HTMLFormElement);
-  const amount = formdata.get("amount") as string | null;
+      setAlert("success", successMessage); // alert the user
 
-  if (activeAccount && amount) {
-    handleTransaction(
-      () => transactionFn(activeAccount, parseFloat(amount) * 100000000),
-      successMessage
-    );
-  } else {
-    setAlert("error", "No active account or Invalid Amount");
-  }
-};
+      // Fetch updated balance and events data
+      if (activeAccount) await fetchBalanceAndHandleError(activeAccount, setBalance);
+      fetchBankBalance(setBankBalance);
+      fetchEventsAndHandleError(0);
+    } catch (error: any) {
+      handleError(error, true);
+    } finally {
+      setTransacting(false);
+    }
+  };
 
-const depositEventHandler: FormEventHandler = (e) => {
-  handleFormEvent(e, deposit, "Coins Deposited to the Bank!");
-};
+  // Generic form handler for deposit and withdraw actions
+  const handleFormEvent = (
+    event: React.FormEvent<Element>,
+    transactionFn: (_a: KeylessAccount, _b: number) => Promise<void>,
+    successMessage: string
+  ) => {
+    event.preventDefault(); // prevent default action
 
-const withdrawEventHandler: FormEventHandler = (e) => {
-  handleFormEvent(e, withdraw, "Withdrawal Successful");
-};
+    // Get the amount
+    const formdata = new FormData(event.currentTarget as HTMLFormElement);
+    const amount = formdata.get("amount") as string | null;
+
+    // Handle the transaction
+    if (activeAccount && amount) {
+      handleTransaction(
+        () => transactionFn(activeAccount, parseFloat(amount) * 100000000),
+        successMessage
+      );
+    } else {
+      setAlert("error", "No active account or Invalid Amount");
+    }
+  };
+
+  // Event Handlers for Withdraw and Deposit forms
+  const depositEventHandler: FormEventHandler = (e) => {
+    handleFormEvent(e, deposit, "Coins Deposited to the Bank!");
+  };
+
+  const withdrawEventHandler: FormEventHandler = (e) => {
+    handleFormEvent(e, withdraw, "Withdrawal Successful");
+  };
 
   return (
     <div className="flex flex-col overflow-scroll px-4 bg-white dark:bg-gray-900 bg-gray-400 text-black dark:text-white transition-colors h-screen">
