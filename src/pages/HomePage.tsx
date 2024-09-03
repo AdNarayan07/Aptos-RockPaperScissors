@@ -248,8 +248,9 @@ function HomePage() {
                       >
                         ⚠️ Fund your wallet with APT token
                       </a>{" "}
-                      if you get "Account Not Found" or "Insufficient Balance"
-                      or "Faucet Error".
+                      if you get <strong>"Account Not Found"</strong> or
+                      <strong>"Insufficient Balance"</strong>
+                      or <strong>"Faucet Error"</strong>.
                     </span>
                   </li>
                   <li className="flex items-start">
@@ -257,8 +258,8 @@ function HomePage() {
                       ⚠️ If you bet the amount which is very close to your
                       current wallet balance, the result declaration might fail
                       and you will get a
-                      "INSUFFICIENT_BALANCE_FOR_TRANSACTION_FEE" error with
-                      "Result Undeclared" warning, in such case{" "}
+                      <strong>"INSUFFICIENT_BALANCE_FOR_TRANSACTION_FEE"</strong> error with
+                      <strong>"Result Undeclared"</strong> warning, in such case{" "}
                       <a
                         href="https://www.aptosfaucet.com/"
                         className="text-cyan-500 hover:underline"
@@ -268,6 +269,12 @@ function HomePage() {
                       </a>{" "}
                       and play a new game. This will declare the previously
                       undeclared game results.
+                    </span>
+                  </li>
+                  <li className="flex items-start">
+                    <span>
+                      ⚠️ If you get <strong>"INVALID_SIGNATURE"</strong> error, clear the site cache
+                      and cookies and then relogin.
                     </span>
                   </li>
                 </ol>
