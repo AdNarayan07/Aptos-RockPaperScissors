@@ -130,7 +130,7 @@ function HomePage() {
 
   return (
     <div className="flex flex-col overflow-hidden px-4 bg-white dark:bg-gray-900 bg-gray-400 text-black dark:text-white transition-colors h-screen">
-      <Header page="home" />
+      <Header />
       <div className="relative w-full flex flex-1 max-h-[calc(100%-130px)] overflow-auto">
         <div
           className="absolute w-full h-full flex justify-center z-10 backdrop-blur-xl transition-all"
@@ -242,24 +242,23 @@ function HomePage() {
               >
                 Shoot!
               </button>
-              <div className="w-full flex-1 text-gray-800 dark:text-gray-200 mb-4 p-2 rounded dark:bg-gray-900 bg-gray-200">
-                <span className="underline">Please Note:</span>
+              <div className="w-full flex-1 text-gray-800 dark:text-gray-200 mb-4 p-2 rounded dark:bg-gray-900 bg-gray-200 lg:overflow-auto">
                 <ol className="ml-6 mt-2 space-y-2">
-                  <li className="flex items-start">
+                  <li>
                     <span>
                       <a
                         href="https://www.aptosfaucet.com/"
                         className="text-cyan-500 hover:underline"
                         target="_blank"
                       >
-                        ⚠️ Fund your wallet with APT token
+                        ⚠️ Please Fund your wallet with APT token
                       </a>{" "}
                       if you get <strong>"Account Not Found"</strong> or
                       <strong>"Insufficient Balance"</strong>
                       or <strong>"Faucet Error"</strong>.
                     </span>
                   </li>
-                  <li className="flex items-start">
+                  <li>
                     <span>
                       ⚠️ If you bet the amount which is very close to your
                       current wallet balance, the result declaration might fail
@@ -277,11 +276,18 @@ function HomePage() {
                       undeclared game results.
                     </span>
                   </li>
-                  <li className="flex items-start">
+                  <li>
                     <span>
                       ⚠️ If you get <strong>"INVALID_SIGNATURE"</strong> error, clear the site cache
                       and cookies and then relogin.
                     </span>
+                  </li>
+                  <li>
+                    ⚠️ <u>Aptos API Errors and Solutions:</u>
+                    <ol className="ml-6 mt-2 space-y-2">
+                      <li><strong>404 Transaction Not Found:</strong> Try Later</li>
+                      <li><strong>500 Internal Server Error:</strong> Clear Cache and Relogin</li>
+                    </ol>
                   </li>
                 </ol>
               </div>

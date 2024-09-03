@@ -142,7 +142,7 @@ function AdminPage() {
 
   return (
     <div className="flex flex-col overflow-scroll px-4 bg-white dark:bg-gray-900 bg-gray-400 text-black dark:text-white transition-colors h-screen">
-      <Header page="admin" />
+      <Header />
 
       {activeAccount && (
         <div className="w-full flex flex-col items-center space-y-4 p-4 dark:bg-gray-900 dark:text-white">
