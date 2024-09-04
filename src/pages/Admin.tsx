@@ -249,7 +249,8 @@ function AdminPage() {
                     e.currentTarget.style.rotate = `${
                       currentRotation + 360
                     }deg`;
-                    setCurrentPage(0);
+                    setCurrentPage(0)
+                    getEvents(setEvents, setNoNextPage, 0);
                   }}
                   className="text-blue-600 ml-2 dark:text-blue-400 hover:underline font-semibold text-2xl w-9 h-9 text-center rounded-full dark:hover:bg-gray-950 hover:outline outline-1 transition-all duration-300"
                   style={{ textDecoration: "none" }}
