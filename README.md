@@ -24,6 +24,10 @@ Check out the application 👉 https://adnarayan-rock-paper-scissors.netlify.app
     - **[Admin Page](#admin-page)**
         - Forms to deposit and withdraw coins to and from the game bank.
         - A list of all the events emitted, paginated, linking them to corresponding transactions in aptos explorer.
+
+
+Tries to fund the user wallet from faucet automatically if a new account is created or the user runs low on balance. *See below for troubleshooting*
+
 ---
 
 ## Troubleshooting
