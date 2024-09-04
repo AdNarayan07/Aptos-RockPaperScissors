@@ -7,7 +7,7 @@ which used [**Aptos Randomness API**](https://aptos.dev/en/build/smart-contracts
 Check out the application 👉 https://adnarayan-rock-paper-scissors.netlify.app
 
 ## Additional Features
-- Allowing the players to [play the game multiple times] and [keep a record of the games](https://github.com/AdNarayan07/Aptos-RockPaperScissors/blob/main/module/sources/RockPaperScissors.move#L130).
+- Allowing the players to [play the game multiple times](https://github.com/AdNarayan07/Aptos-RockPaperScissors/blob/main/module/sources/RockPaperScissors.move#L130) and [keep a record of the games](https://github.com/AdNarayan07/Aptos-RockPaperScissors/blob/main/module/sources/RockPaperScissors.move#L35-L55).
 - Allowing the players to [bet APT coins](https://github.com/AdNarayan07/Aptos-RockPaperScissors/blob/main/module/sources/RockPaperScissors.move#L143-L149).
 - A [Bank to Store the Coins](https://github.com/AdNarayan07/Aptos-RockPaperScissors/blob/main/module/sources/RockPaperScissors.move#L46-L49) and [give it to user after result](https://github.com/AdNarayan07/Aptos-RockPaperScissors/blob/main/module/sources/RockPaperScissors.move#L197-L212).
 - Allowing users to [deposit the coins to bank](https://github.com/AdNarayan07/Aptos-RockPaperScissors/blob/main/module/sources/RockPaperScissors.move#L74-L91) (well, they won't get it back) so that the computer can bet the bank money.
@@ -29,12 +29,12 @@ Check out the application 👉 https://adnarayan-rock-paper-scissors.netlify.app
 ## Troubleshooting
 - ⚠️ Please [fund your wallet with APT](#funding-your-wallet-from-the-faucet) token if you get **"Account Not Found"** or **"Insufficient Balance"** or **"Faucet Error"**.
 - ⚠️ If you bet the amount which is very close to your current wallet balance, the result declaration might fail and you will get a **"INSUFFICIENT_BALANCE_FOR_TRANSACTION_FEE"** error with **"Result Undeclared"** warning, in such case [fund your wallet with APT token](#funding-your-wallet-from-the-faucet) and play a new game. This will declare the previously undeclared game results.
-- ⚠️ If you get "INVALID_SIGNATURE" error, [clear the site data](#clearing-site-data-(in-chrome)) and then relogin.
+- ⚠️ If you get "INVALID_SIGNATURE" error, [clear the site data](#clearing-site-data-in-chrome) and then relogin.
 
     | Aptos API Error | Solution |
     |-------------|---------|
     | 404 Transaction Not Found | Try Later |
-    |500 Internal Server Error | [Clear Site Data](#clearing-site-data-(in-chrome)) and Relogin |
+    |500 Internal Server Error | [Clear Site Data](#clearing-site-data-in-chrome) and Relogin |
     
 ## Running the Project Locally
 
@@ -113,3 +113,7 @@ https://github.com/user-attachments/assets/1424d464-5608-479a-a47f-25ae57aff931
 
 
 ### Admin Page
+
+
+https://github.com/user-attachments/assets/294e7c20-d15d-470a-9773-76bfab441384
+
